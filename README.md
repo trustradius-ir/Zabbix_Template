@@ -1,6 +1,6 @@
 # Zabbix Template
 
 
-#DNS Check
+# DNS Check
 This template used to check dns server from zabbix server agent
  
