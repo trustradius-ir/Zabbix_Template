@@ -21,7 +21,7 @@ zabbix_export:
         -
           uuid: 30774ad745964e85a148c461196b9e4c
           name: 'DNS Check'
-          key: 'system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/0/''"]'
+          key: 'system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/10000/''"]'
           delay: 10s
           value_type: FLOAT
           units: s
@@ -37,7 +37,7 @@ zabbix_export:
           triggers:
             -
               uuid: af34274d07ac4a1ba575c9c58380265f
-              expression: 'avg(/DNS Check/system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/0/''"],5m) > {$ICMP_RESPONSE_TIME_WARN}'
+              expression: 'avg(/DNS Check/system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/10000/''"],5m) > {$ICMP_RESPONSE_TIME_WARN} and avg(/DNS Check/system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/10000/''"],5m) < 10000'
               name: 'High DNS response time'
               priority: WARNING
               tags:
@@ -49,7 +49,7 @@ zabbix_export:
                   value: performance
             -
               uuid: 1bd9649847bf4d9ca723a9ae1e0531ad
-              expression: 'max(/DNS Check/system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/0/''"],#6)=0'
+              expression: 'max(/DNS Check/system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/10000/''"],#6)=10000'
               name: 'Unavailable by DNS Check'
               priority: HIGH
               description: 'Last six attempts returned timeout.  Please check device connectivity.'
