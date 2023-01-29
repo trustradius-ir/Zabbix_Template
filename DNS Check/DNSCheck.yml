@@ -1,0 +1,69 @@
+zabbix_export:
+  version: '6.2'
+  date: '2023-01-29T04:35:51Z'
+  template_groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: 509bf1069a304cb3a28979f19068add5
+      template: 'DNS Check'
+      name: 'DNS Check'
+      description: |
+        ::: Change Zabix Server Agent Config :::
+        AllowKey=system.run[*]
+        UnsafeUserParameters=1
+      groups:
+        -
+          name: Templates/Modules
+      items:
+        -
+          uuid: 30774ad745964e85a148c461196b9e4c
+          name: 'DNS Check'
+          key: 'system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/0/''"]'
+          delay: 10s
+          value_type: FLOAT
+          units: s
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.001'
+          tags:
+            -
+              tag: Application
+              value: DNS
+          triggers:
+            -
+              uuid: af34274d07ac4a1ba575c9c58380265f
+              expression: 'avg(/DNS Check/system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/0/''"],5m) > {$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High DNS response time'
+              priority: WARNING
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+            -
+              uuid: 1bd9649847bf4d9ca723a9ae1e0531ad
+              expression: 'max(/DNS Check/system.run["dig +time=3 +tries=1 @{$DNS_SERVER} {$DOMAIN_NAME} |grep Query |awk ''END{print$4}'' | sed ''s/^$/0/''"],#6)=0'
+              name: 'Unavailable by DNS Check'
+              priority: HIGH
+              description: 'Last six attempts returned timeout.  Please check device connectivity.'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+      macros:
+        -
+          macro: '{$DNS_SERVER}'
+          value: 8.8.8.8
+        -
+          macro: '{$DOMAIN_NAME}'
+          value: yahoo.com
+        -
+          macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.5'
