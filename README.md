@@ -1,3 +1,3 @@
-# Zabix Template
-This template used to check dns server from zabix server agent
+# Zabbix Template
+This template used to check dns server from zabbix server agent
  
